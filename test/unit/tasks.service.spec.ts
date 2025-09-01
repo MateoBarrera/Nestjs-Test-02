@@ -3,7 +3,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TasksService } from '../../src/modules/task/tasks.service';
 import { Task, TaskStatus } from '../../src/modules/task/tasks.entity';
-import { CreateTaskDto, UpdateTaskDto } from '../../src/modules/task/tasks.dto';
+
+import { CreateTaskDto } from '../../src/modules/task/dto/createTask.dto';
+import { UpdateTaskDto } from '../../src/modules/task/dto/updateTask.dto';
 
 // Keep mocks typed as any to avoid strict TS issues in tests
 const createMockRepository = () => ({

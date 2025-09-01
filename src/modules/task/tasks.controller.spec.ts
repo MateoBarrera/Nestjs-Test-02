@@ -38,10 +38,10 @@ describe('TasksController', () => {
         await expect(controller.findAll(new PaginationDto())).resolves.toEqual(paginated);
     });
 
-    it('create returns created wrapped', async () => {
+    it('create returns created', async () => {
         const dto = { title: 'x', description: 'd' };
         const saved = { id: 2, ...dto, status: TaskStatus.PENDING } as Task;
         service.create.mockResolvedValue(saved);
-        await expect(controller.create(dto as any)).resolves.toEqual({ status: 'success', data: saved });
+        await expect(controller.create(dto as any)).resolves.toEqual(saved);
     });
 });

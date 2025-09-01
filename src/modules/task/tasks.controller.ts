@@ -9,10 +9,11 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  ValidationPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { TasksService, PaginatedTasks } from './tasks.service';
-import { CreateTaskDto, UpdateTaskDto } from './tasks.dto';
+import { CreateTaskDto } from './dto/createTask.dto';
+import { UpdateTaskDto } from './dto/updateTask.dto';
 import { PaginationDto } from '../../common/dtos/pagination.dto';
 import { TaskStatus } from './tasks.entity';
 
@@ -22,8 +23,7 @@ export class TasksController {
 
   @Post()
   async create(@Body() createTaskDto: CreateTaskDto) {
-    const created = await this.tasksService.create(createTaskDto);
-    return { status: 'success', data: created };
+    return this.tasksService.create(createTaskDto);
   }
 
   @Get()
@@ -45,18 +45,18 @@ export class TasksController {
   async findOne(@Param('id') id: string) {
     const item = await this.tasksService.findOne(+id);
     if (!item) {
-      return { status: 'error', message: 'Not found' };
+      throw new NotFoundException('Task not found');
     }
-    return { status: 'success', data: item };
+    return item;
   }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
     const updated = await this.tasksService.update(+id, updateTaskDto);
     if (!updated) {
-      return { status: 'error', message: 'Not found' };
+      throw new NotFoundException('Task not found');
     }
-    return { status: 'success', data: updated };
+    return updated;
   }
 
   @Delete(':id')
@@ -64,7 +64,7 @@ export class TasksController {
   async remove(@Param('id') id: string) {
     const ok = await this.tasksService.remove(+id);
     if (!ok) {
-      return { status: 'error', message: 'Not found' };
+      throw new NotFoundException('Task not found');
     }
     return null;
   }
