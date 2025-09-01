@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { TasksService, PaginatedTasks } from './tasks.service';
 import { UseInterceptors } from '@nestjs/common';
@@ -19,8 +20,10 @@ import { UpdateTaskDto } from './dto/updateTask.dto';
 import { PaginationDto } from '../../common/dtos/pagination.dto';
 import { TasksQueryDto } from './dto/tasks-query.dto';
 import { TaskStatus } from './tasks.entity';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('tasks')
+@UseGuards(AuthGuard('jwt'))
 export class TasksController {
   constructor(private readonly tasksService: TasksService) { }
 

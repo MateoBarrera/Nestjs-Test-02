@@ -25,4 +25,12 @@ export class AppConfigService {
   get dbDatabase(): string {
     return this.configService.get<string>('DB_DATABASE') ?? 'appdb';
   }
+
+  get jwtSecret(): string {
+    return this.configService.get<string>('JWT_SECRET') ?? 'changeme';
+  }
+
+  get jwtExpiresIn(): string {
+    return this.configService.get<string>('JWT_EXPIRES_IN') ?? '3600s';
+  }
 }

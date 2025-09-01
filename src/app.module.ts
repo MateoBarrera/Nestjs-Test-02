@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from './config/config.module';
 import { AppConfigService } from './config/config.service';
 import { TasksModule } from './modules/task/tasks.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { InMemoryCacheClient } from './common/cache/in-memory-cache.client';
@@ -32,6 +33,8 @@ import { CacheInterceptor } from './common/interceptors/cache.interceptor';
       },
     }),
     TasksModule,
+    // register auth module so JwtStrategy and JwtModule are available
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
