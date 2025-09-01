@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from './config/config.module';
 import { AppConfigService } from './config/config.service';
 import { TasksModule } from './modules/task/tasks.module';
+import { RateLimitGuard } from './common/guards/rate-limit.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -29,6 +31,9 @@ import { TasksModule } from './modules/task/tasks.module';
     TasksModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: RateLimitGuard },
+  ],
 })
 export class AppModule { }
