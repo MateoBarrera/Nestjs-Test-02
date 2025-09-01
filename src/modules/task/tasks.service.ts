@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Task, TaskStatus } from './tasks.entity';
@@ -21,6 +21,9 @@ export class TasksService {
   constructor(
     @InjectRepository(Task)
     private tasksRepository: Repository<Task>,
+    @Optional()
+    @Inject('CACHE_CLIENT')
+    private cacheClient?: { delByPrefix(prefix: string): Promise<void> },
   ) { }
 
   testModule(): String {
@@ -61,16 +64,21 @@ export class TasksService {
     if (createTaskDto.description !== undefined) {
       task.description = createTaskDto.description;
     }
-    return this.tasksRepository.save(task);
+    const saved = await this.tasksRepository.save(task);
+    if (this.cacheClient) await this.cacheClient.delByPrefix('/tasks');
+    return saved;
   }
 
   async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task | null> {
     await this.tasksRepository.update(id, updateTaskDto);
+    if (this.cacheClient) await this.cacheClient.delByPrefix('/tasks');
     return this.findOne(id);
   }
 
   async remove(id: number): Promise<boolean> {
     const res = await this.tasksRepository.delete(id);
-    return res.affected ? res.affected > 0 : false;
+    const ok = res.affected ? res.affected > 0 : false;
+    if (ok && this.cacheClient) await this.cacheClient.delByPrefix('/tasks');
+    return ok;
   }
 }

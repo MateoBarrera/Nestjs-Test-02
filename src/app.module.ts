@@ -7,6 +7,9 @@ import { AppConfigService } from './config/config.service';
 import { TasksModule } from './modules/task/tasks.module';
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { InMemoryCacheClient } from './common/cache/in-memory-cache.client';
+import { RedisCacheClient } from './common/cache/redis-cache.client';
+import { CacheInterceptor } from './common/interceptors/cache.interceptor';
 
 @Module({
   imports: [
@@ -34,6 +37,25 @@ import { APP_GUARD } from '@nestjs/core';
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: RateLimitGuard },
+    {
+      provide: 'CACHE_CLIENT',
+      useFactory: () => {
+        const host = process.env.REDIS_HOST;
+        const port = Number(process.env.REDIS_PORT ?? 6379);
+        if (host) {
+          try {
+            return new RedisCacheClient(host, port);
+          } catch (e) {
+            // Fail open: log if needed and fallback to in-memory client
+            // eslint-disable-next-line no-console
+            console.warn('RedisCacheClient build failed, falling back to in-memory cache', e?.message ?? e);
+            return new InMemoryCacheClient();
+          }
+        }
+        return new InMemoryCacheClient();
+      },
+    },
+    CacheInterceptor,
   ],
 })
 export class AppModule { }

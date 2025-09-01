@@ -37,6 +37,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }
 
         // Fallback for unknown errors
+        // Log details when not in production to help debug
+        try {
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.error('[ExceptionFilter] unhandled error:', exception);
+            }
+        } catch (_e) { }
+
         response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
             status: 'error',
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

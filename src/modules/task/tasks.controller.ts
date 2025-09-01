@@ -12,6 +12,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TasksService, PaginatedTasks } from './tasks.service';
+import { UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor } from '../../common/interceptors/cache.interceptor';
 import { CreateTaskDto } from './dto/createTask.dto';
 import { UpdateTaskDto } from './dto/updateTask.dto';
 import { PaginationDto } from '../../common/dtos/pagination.dto';
@@ -28,6 +30,7 @@ export class TasksController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   async findAll(@Query() q: TasksQueryDto): Promise<PaginatedTasks> {
     const page = q.page ?? 1;
     const limit = q.limit ?? 10;

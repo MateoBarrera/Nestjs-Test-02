@@ -20,15 +20,19 @@ describe('TasksService', () => {
     let repo: any;
 
     beforeEach(async () => {
+        const mockCacheClient = { delByPrefix: jest.fn().mockResolvedValue(undefined) };
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 TasksService,
                 { provide: getRepositoryToken(Task), useValue: createMockRepository() },
+                { provide: 'CACHE_CLIENT', useValue: mockCacheClient },
             ],
         }).compile();
 
         service = module.get<TasksService>(TasksService);
         repo = module.get<any>(getRepositoryToken(Task));
+        // attach for assertions
+        (service as any).cacheClient = mockCacheClient;
     });
 
     it('should be defined', () => {
@@ -52,6 +56,7 @@ describe('TasksService', () => {
         const saved = { id: 10, title: 'New', description: 'desc', status: TaskStatus.PENDING } as Task;
         repo.save.mockResolvedValue(saved);
         await expect(service.create(dto)).resolves.toEqual(saved);
+        expect((service as any).cacheClient.delByPrefix).toHaveBeenCalledWith('/tasks');
     });
 
     it('update calls repo.update', async () => {
@@ -60,11 +65,13 @@ describe('TasksService', () => {
         repo.update.mockResolvedValue(undefined);
         repo.findOneBy.mockResolvedValue(updated);
         await expect(service.update(1, dto)).resolves.toEqual(updated);
+        expect((service as any).cacheClient.delByPrefix).toHaveBeenCalledWith('/tasks');
     });
 
     it('remove calls repo.delete', async () => {
         repo.delete.mockResolvedValue({ affected: 1 });
         await expect(service.remove(1)).resolves.toBe(true);
+        expect((service as any).cacheClient.delByPrefix).toHaveBeenCalledWith('/tasks');
     });
 
     it('findAllWithPagination returns items and meta counters', async () => {
