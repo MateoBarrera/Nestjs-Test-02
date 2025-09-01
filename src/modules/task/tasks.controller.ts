@@ -15,6 +15,7 @@ import { TasksService, PaginatedTasks } from './tasks.service';
 import { CreateTaskDto } from './dto/createTask.dto';
 import { UpdateTaskDto } from './dto/updateTask.dto';
 import { PaginationDto } from '../../common/dtos/pagination.dto';
+import { TasksQueryDto } from './dto/tasks-query.dto';
 import { TaskStatus } from './tasks.entity';
 
 @Controller('tasks')
@@ -27,18 +28,10 @@ export class TasksController {
   }
 
   @Get()
-  async findAll(
-    @Query() pagination: PaginationDto,
-    @Query('status') status?: TaskStatus,
-  ): Promise<PaginatedTasks> {
-    const page = pagination.page ?? 1;
-    const limit = pagination.limit ?? 10;
-    return this.tasksService.findAllWithPagination(status as TaskStatus, page, limit);
-  }
-
-  @Get('test')
-  test() {
-    return this.tasksService.testModule();
+  async findAll(@Query() q: TasksQueryDto): Promise<PaginatedTasks> {
+    const page = q.page ?? 1;
+    const limit = q.limit ?? 10;
+    return this.tasksService.findAllWithPagination(q.status as TaskStatus, page, limit);
   }
 
   @Get(':id')
@@ -60,12 +53,11 @@ export class TasksController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
     const ok = await this.tasksService.remove(+id);
     if (!ok) {
       throw new NotFoundException('Task not found');
     }
-    return null;
+    return { deleted: true, id: +id };
   }
 }

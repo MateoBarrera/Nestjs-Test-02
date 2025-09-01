@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { Task, TaskStatus } from './tasks.entity';
-import { PaginationDto } from '../../common/dtos/pagination.dto';
+import { TasksQueryDto } from './dto/tasks-query.dto';
 
 describe('TasksController', () => {
     let controller: TasksController;
@@ -35,7 +35,7 @@ describe('TasksController', () => {
         const items: Task[] = [{ id: 1, title: 'a', description: null, status: TaskStatus.PENDING }];
         const paginated = { items, meta: { total: 1, page: 1, limit: 10, completed: 0, pending: 1 } };
         service.findAllWithPagination.mockResolvedValue(paginated);
-        await expect(controller.findAll(new PaginationDto())).resolves.toEqual(paginated);
+        await expect(controller.findAll(new TasksQueryDto())).resolves.toEqual(paginated);
     });
 
     it('create returns created', async () => {
@@ -43,5 +43,15 @@ describe('TasksController', () => {
         const saved = { id: 2, ...dto, status: TaskStatus.PENDING } as Task;
         service.create.mockResolvedValue(saved);
         await expect(controller.create(dto as any)).resolves.toEqual(saved);
+    });
+
+    it('remove returns deleted object when successful', async () => {
+        service.remove.mockResolvedValue(true);
+        await expect(controller.remove('3')).resolves.toEqual({ deleted: true, id: 3 });
+    });
+
+    it('remove throws NotFound when unsuccessful', async () => {
+        service.remove.mockResolvedValue(false);
+        await expect(controller.remove('4')).rejects.toThrow();
     });
 });
