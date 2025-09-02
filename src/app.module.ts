@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,6 +11,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { InMemoryCacheClient } from './common/cache/in-memory-cache.client';
 import { RedisCacheClient } from './common/cache/redis-cache.client';
 import { CacheInterceptor } from './common/interceptors/cache.interceptor';
+import { RequestLoggingMiddleware } from './common/middleware/request-logging.middleware';
+import { LoggingModule } from './modules/logging/logging.module';
+import { LogsModule } from './modules/logging/logs.module';
 
 @Module({
   imports: [
@@ -35,6 +38,8 @@ import { CacheInterceptor } from './common/interceptors/cache.interceptor';
     TasksModule,
     // register auth module so JwtStrategy and JwtModule are available
     AuthModule,
+    LoggingModule,
+    ...(process.env.NODE_ENV === 'production' ? [] : [LogsModule]),
   ],
   controllers: [AppController],
   providers: [
@@ -61,4 +66,8 @@ import { CacheInterceptor } from './common/interceptors/cache.interceptor';
     CacheInterceptor,
   ],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestLoggingMiddleware).forRoutes('*');
+  }
+}
