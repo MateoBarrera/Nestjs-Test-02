@@ -11,6 +11,7 @@ import {
   HttpStatus,
   NotFoundException,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TasksService, PaginatedTasks } from './tasks.service';
 import { UseInterceptors } from '@nestjs/common';
@@ -41,8 +42,8 @@ export class TasksController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const item = await this.tasksService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const item = await this.tasksService.findOne(id);
     if (!item) {
       throw new NotFoundException('Task not found');
     }
@@ -50,8 +51,8 @@ export class TasksController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    const updated = await this.tasksService.update(+id, updateTaskDto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateTaskDto: UpdateTaskDto) {
+    const updated = await this.tasksService.update(id, updateTaskDto);
     if (!updated) {
       throw new NotFoundException('Task not found');
     }
@@ -59,11 +60,11 @@ export class TasksController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    const ok = await this.tasksService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    const ok = await this.tasksService.remove(id);
     if (!ok) {
       throw new NotFoundException('Task not found');
     }
-    return { deleted: true, id: +id };
+    return { deleted: true, id };
   }
 }

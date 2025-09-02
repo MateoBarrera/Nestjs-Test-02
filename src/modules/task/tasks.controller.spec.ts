@@ -47,11 +47,11 @@ describe('TasksController', () => {
 
     it('remove returns deleted object when successful', async () => {
         service.remove.mockResolvedValue(true);
-        await expect(controller.remove('3')).resolves.toEqual({ deleted: true, id: 3 });
+        await expect(controller.remove(3)).resolves.toEqual({ deleted: true, id: 3 });
     });
 
     it('remove throws NotFound when unsuccessful', async () => {
         service.remove.mockResolvedValue(false);
-        await expect(controller.remove('4')).rejects.toThrow();
+        await expect(controller.remove(4)).rejects.toThrow();
     });
 });
