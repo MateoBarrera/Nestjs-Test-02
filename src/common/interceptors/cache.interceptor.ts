@@ -49,7 +49,16 @@ export class CacheInterceptor implements NestInterceptor {
 
         return cacheGet$.pipe(
             switchMap((cached) => {
-                if (cached !== undefined) {
+                // treat both undefined and null as cache miss
+                if (cached !== undefined && cached !== null) {
+                    // if cache stored JSON strings (e.g. Redis), try to parse
+                    if (typeof cached === 'string') {
+                        try {
+                            return of(JSON.parse(cached));
+                        } catch (e) {
+                            return of(cached);
+                        }
+                    }
                     return of(cached);
                 }
                 return next.handle().pipe(
